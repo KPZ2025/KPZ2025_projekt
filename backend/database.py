@@ -16,6 +16,9 @@ class Product(BaseModel):
     qty: float
     unit: str
     status: str = "OK"
+    extra_price: float
+    limit_free: int
+    limit_max: int
 
 class TransactionInput(BaseModel):
     product_id: int
