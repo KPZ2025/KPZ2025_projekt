@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import datetime
-from api_service import pobierz_produkty, wyslij_transakcje
+from api_service import pobierz_produkty, wyslij_transakcje, pobierz_historie
 
 from views.login_view import LoginView
 from views.resident_view import ResidentView
@@ -16,12 +16,13 @@ class SystemDystrybucjiApp(ctk.CTk):
         self.geometry("1024x600")
 
         self.produkty_db = []
+        self.historia_zamowien = []
+        
         self.odswiez_dane()
         
         self.uzycie_globalne = {}
         self.salda_uzytkownikow = {"USER_123": 50, "ADMIN_999": 999}
         self.koszyk_uzytkownika = {}
-        self.historia_zamowien = []
         self.aktualny_uzytkownik = None
         self.saldo_sesji = 0
 
@@ -31,7 +32,9 @@ class SystemDystrybucjiApp(ctk.CTk):
         self.pokaz_ekran_logowania()
 
     def odswiez_dane(self):
+        """Pobiera świeże produkty i historię z serwera"""
         self.produkty_db = pobierz_produkty()
+        self.historia_zamowien = pobierz_historie()
 
     def wyczysc_ekran(self):
         for widget in self.main_container.winfo_children():
@@ -62,7 +65,6 @@ class SystemDystrybucjiApp(ctk.CTk):
         self.wyczysc_ekran()
         WarehouseView(self.main_container, self)
 
-
     def zmien_ilosc_w_koszyku(self, id_prod, delta):
         obecna = self.koszyk_uzytkownika.get(id_prod, 0)
         nowa = obecna + delta
@@ -87,7 +89,6 @@ class SystemDystrybucjiApp(ctk.CTk):
             if ilosc > 0:
                 p = next((x for x in self.produkty_db if x['id'] == pid), None)
                 if p:
-
                     juz_pobrano = self.uzycie_globalne[self.aktualny_uzytkownik].get(pid, 0)
                     limit_free = p.get('limit_free', 0)
                     free_left = max(0, limit_free - juz_pobrano)
@@ -115,13 +116,10 @@ class SystemDystrybucjiApp(ctk.CTk):
                     used = self.uzycie_globalne[self.aktualny_uzytkownik].get(pid, 0)
                     self.uzycie_globalne[self.aktualny_uzytkownik][pid] = used + ilosc
 
-            now = datetime.datetime.now().strftime("%H:%M:%S")
-            self.historia_zamowien.append({
-                "user": self.aktualny_uzytkownik,
-                "czas": now,
-                "produkty": [f"ID {pid} x{ilosc}" for pid, ilosc in self.koszyk_uzytkownika.items() if ilosc > 0]
-            })
             self.koszyk_uzytkownika = {}
+            
+            self.odswiez_dane()
+            
             return True
         return False
 

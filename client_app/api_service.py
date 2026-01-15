@@ -22,3 +22,12 @@ def wyslij_transakcje(product_id, zmiana_ilosci, user_card_id):
         return response.status_code == 200
     except:
         return False
+
+def pobierz_historie():
+    try:
+        response = requests.get(f"{SERVER_URL}/api/history")
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print(f"Błąd API (historia): {e}")
+    return []
