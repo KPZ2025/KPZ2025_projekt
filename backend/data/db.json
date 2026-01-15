@@ -1,0 +1,38 @@
+[
+    {
+        "id": 1,
+        "name": "Chleb",
+        "price": 5.0,
+        "qty": 50.0,
+        "unit": "szt",
+        "status": "OK",
+        "category": "Spożywcze",
+        "extra_price": 7.5,
+        "limit_free": 2,
+        "limit_max": 5
+    },
+    {
+        "id": 2,
+        "name": "Woda",
+        "price": 2.0,
+        "qty": 48.0,
+        "unit": "l",
+        "status": "OK",
+        "category": "Napoje",
+        "extra_price": 3.0,
+        "limit_free": 5,
+        "limit_max": 20
+    },
+    {
+        "id": 3,
+        "name": "Ziemniaki",
+        "price": 10.0,
+        "qty": 48.0,
+        "unit": "kg",
+        "status": "OK",
+        "category": "Warzywa",
+        "extra_price": 15.0,
+        "limit_free": 1,
+        "limit_max": 3
+    }
+]
