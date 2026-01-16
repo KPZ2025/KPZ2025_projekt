@@ -1,5 +1,7 @@
 import json
 import os
+import random
+import uuid
 from filelock import FileLock
 from pydantic import BaseModel
 from typing import List, Optional
@@ -7,6 +9,7 @@ from typing import List, Optional
 DATA_DIR = 'data'
 DB_FILE = os.path.join(DATA_DIR, 'db.json')
 TRANS_FILE = os.path.join(DATA_DIR, 'transactions.json')
+EXCHANGE_FILE = os.path.join(DATA_DIR, 'exchange.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -33,6 +36,13 @@ class TransactionHistoryEntry(BaseModel):
     unit: str
     user_card_id: str
 
+class ExchangeOffer(BaseModel):
+    id: Optional[str] = None
+    user: str
+    daje_nazwa: str
+    daje_ilosc: int
+    szuka_nazwa: str
+    szuka_ilosc: int
 
 def load_json_file(filename) -> List[dict]:
     if not os.path.exists(filename):
@@ -46,3 +56,35 @@ def load_json_file(filename) -> List[dict]:
 def save_json_file(filename, data: List[dict]):
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+def generuj_nowe_oferty_npc(ilosc=3):
+    imiona = ["Marek", "Anna", "Piotr", "Kasia", "Zygmunt", "Ewa", "Tomek", "Ola", "Jacek", "Monika"]
+    zasoby = ["Chleb", "Woda", "Ryż", "Makaron", "Leki", "Tokeny"]
+    
+    nowe = []
+    for _ in range(ilosc):
+        imie = random.choice(imiona)
+        suffix = random.randint(10, 99)
+        co_daje = random.choice(zasoby)
+        co_szuka = random.choice([z for z in zasoby if z != co_daje])
+        
+        oferta = {
+            "id": f"npc_{uuid.uuid4()}", 
+            "user": f"{imie}_{suffix}",
+            "daje_nazwa": co_daje,
+            "daje_ilosc": random.randint(1, 4),
+            "szuka_nazwa": co_szuka,
+            "szuka_ilosc": random.randint(1, 10)
+        }
+        nowe.append(oferta)
+    return nowe
+
+obecne_oferty = load_json_file(EXCHANGE_FILE)
+oferty_uzytkownikow = [o for o in obecne_oferty if not str(o.get('id', '')).startswith('npc_')]
+nowe_boty = generuj_nowe_oferty_npc(random.randint(3, 5))
+finalna_lista = oferty_uzytkownikow + nowe_boty
+
+with open(EXCHANGE_FILE, 'w', encoding='utf-8') as f:
+    json.dump(finalna_lista, f, indent=4, ensure_ascii=False)
+
+print(f"--- GIEŁDA ODŚWIEŻONA: Zachowano {len(oferty_uzytkownikow)} ofert graczy, dodano {len(nowe_boty)} nowych NPC ---")

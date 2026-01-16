@@ -3,7 +3,7 @@
         "id": 1,
         "name": "Chleb",
         "price": 5.0,
-        "qty": 50.0,
+        "qty": 55.0,
         "unit": "szt",
         "status": "OK",
         "category": "Spożywcze",

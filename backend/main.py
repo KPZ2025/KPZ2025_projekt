@@ -4,9 +4,10 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
-from database import Product, load_json_file, DB_FILE, TransactionInput, TRANS_FILE, save_json_file, TransactionHistoryEntry
+from database import Product, load_json_file, DB_FILE, TransactionInput, TRANS_FILE, save_json_file, TransactionHistoryEntry, ExchangeOffer, EXCHANGE_FILE
 
 app = FastAPI(title="RPi Master Server")
+
 
 @app.get("/api/products", response_model=List[Product])
 def get_products():
@@ -19,6 +20,7 @@ def process_transaction(trans: TransactionInput):
     
     product_found = False
     found_product_name = "Unknown"
+    item_obj = None
     
     for item in products:
         if item['id'] == trans.product_id:
@@ -30,6 +32,7 @@ def process_transaction(trans: TransactionInput):
             
             product_found = True
             found_product_name = item['name']
+            item_obj = item
             break
     
     if not product_found:
@@ -49,7 +52,8 @@ def process_transaction(trans: TransactionInput):
     save_json_file(TRANS_FILE, transactions)
     
     print(f"TRANSAKCJA: Produkt='{found_product_name}' Zmiana={trans.qty_change}")
-    return {"message": "Success", "new_qty": item['qty']}
+    new_q = item_obj['qty'] if item_obj else 0
+    return {"message": "Success", "new_qty": new_q}
 
 @app.get("/api/history", response_model=List[TransactionHistoryEntry])
 def get_transaction_history():
@@ -77,5 +81,32 @@ def get_transaction_history():
         history_response.append(entry)
         
     return history_response
+
+
+@app.get("/api/exchange", response_model=List[ExchangeOffer])
+def get_offers():
+    """Pobiera listę aktywnych ofert"""
+    return load_json_file(EXCHANGE_FILE)
+
+@app.post("/api/exchange")
+def add_offer(offer: ExchangeOffer):
+    """Dodaje nową ofertę giełdową"""
+    offers = load_json_file(EXCHANGE_FILE)
+    offer.id = str(uuid.uuid4())
+    offers.append(offer.dict())
+    save_json_file(EXCHANGE_FILE, offers)
+    return {"message": "Oferta dodana", "id": offer.id}
+
+@app.delete("/api/exchange/{offer_id}")
+def delete_offer(offer_id: str):
+    """Usuwa ofertę (np. po akceptacji)"""
+    offers = load_json_file(EXCHANGE_FILE)
+    new_offers = [o for o in offers if o['id'] != offer_id]
+    
+    if len(offers) == len(new_offers):
+        raise HTTPException(status_code=404, detail="Oferta nie znaleziona")
+        
+    save_json_file(EXCHANGE_FILE, new_offers)
+    return {"message": "Oferta usunięta"}
 
 # uvicorn main:app --host 0.0.0.0 --port 8000 --reload
