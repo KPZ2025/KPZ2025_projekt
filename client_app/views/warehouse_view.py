@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import tkinter.messagebox as msg
 from datetime import datetime
-from api_service import wyslij_transakcje
+from api_service import wyslij_transakcje, dodaj_nowy_produkt_db, pobierz_historie
 import json
 import os
 
@@ -67,11 +67,15 @@ class WarehouseView(ctk.CTkFrame):
 
     def odswiez_magazyn(self):
         for w in self.inv_sc.winfo_children(): w.destroy()
+        
+        self.app.odswiez_dane()
         sorted_products = sorted(self.app.produkty_db, key=lambda x: x['id'])
         for p in sorted_products: self.stworz_kafelek_magazynowy(self.inv_sc, p)
             
         for w in self.ord_sc.winfo_children(): w.destroy()
-        historia = self.app.historia_zamowien
+        
+        historia = pobierz_historie()
+        
         grouped_orders = {}
         
         if historia:
@@ -153,42 +157,39 @@ class WarehouseView(ctk.CTkFrame):
              ctk.CTkLabel(self.ord_sc, text="Brak oczekujących\nwydań.", text_color="gray").pack(pady=50)
 
     def pokaz_custom_popup(self, tytul, podtytul):
-        """Uniwersalna funkcja do wyświetlania ładnych okienek (jak w starej wersji)"""
         popup = ctk.CTkToplevel(self)
-        
         try:
             x = self.app.winfo_x() + (self.app.winfo_width()//2) - 250
             y = self.app.winfo_y() + (self.app.winfo_height()//2) - 175
-        except:
-            x, y = 100, 100
-            
+        except: x, y = 100, 100
         popup.geometry(f"500x350+{x}+{y}")
-        popup.overrideredirect(True)
-        popup.attributes("-topmost", True)
-        popup.grab_set()
-        
+        popup.overrideredirect(True); popup.attributes("-topmost", True); popup.grab_set()
         frame = ctk.CTkFrame(popup, fg_color="#111", border_width=4, border_color="#00E676")
         frame.pack(fill="both", expand=True)
-        
         ctk.CTkLabel(frame, text="✔", font=("Arial", 80), text_color="#00E676").pack(pady=(40, 10))
         ctk.CTkLabel(frame, text=tytul, font=("Impact", 30), text_color="white").pack(pady=5)
         ctk.CTkLabel(frame, text=podtytul, font=("Roboto", 14), text_color="#aaa").pack(pady=10)
-        
-        ctk.CTkButton(frame, text="OK", font=("Roboto", 16, "bold"), fg_color="#00E676", text_color="black", 
-                      height=50, width=200, command=popup.destroy).pack(pady=30)
+        ctk.CTkButton(frame, text="OK", font=("Roboto", 16, "bold"), fg_color="#00E676", text_color="black", height=50, width=200, command=popup.destroy).pack(pady=30)
 
     def pokaz_popup_dostawy(self):
         window = ctk.CTkToplevel(self)
-        window.geometry("300x250"); window.attributes("-topmost", True); window.grab_set()
+        window.geometry("500x550"); window.attributes("-topmost", True); window.grab_set()
         
-        ctk.CTkLabel(window, text="PRZYJĘCIE DOSTAWY", font=("Impact", 18)).pack(pady=15)
+        tabs = ctk.CTkTabview(window)
+        tabs.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        tab_exist = tabs.add("DOSTAWA (ISTNIEJĄCY)")
+        tab_new = tabs.add("REJESTRACJA NOWEGO")
+        
+        ctk.CTkLabel(tab_exist, text="PRZYJĘCIE DOSTAWY", font=("Impact", 18)).pack(pady=15)
         prod_names = [p['name'] for p in self.app.produkty_db]
-        combo = ctk.CTkOptionMenu(window, values=prod_names); combo.pack(pady=10)
-        entry = ctk.CTkEntry(window, placeholder_text="Ilość"); entry.pack(pady=10)
+        combo = ctk.CTkOptionMenu(tab_exist, values=prod_names, width=250); combo.pack(pady=10)
+        entry = ctk.CTkEntry(tab_exist, placeholder_text="Ilość", width=250); entry.pack(pady=10)
 
-        def zapisz():
+        def zapisz_istniejacy():
             try:
-                ilosc = int(entry.get())
+                raw_qty = entry.get().replace(',', '.')
+                ilosc = int(float(raw_qty))
                 nazwa = combo.get()
                 prod = next((p for p in self.app.produkty_db if p['name'] == nazwa), None)
                 if prod:
@@ -197,8 +198,75 @@ class WarehouseView(ctk.CTkFrame):
                         self.odswiez_magazyn()
                         window.destroy()
                         self.pokaz_custom_popup("DOSTAWA PRZYJĘTA", f"Zaktualizowano stan: {nazwa}")
-                    else:
-                        msg.showerror("Błąd", "Błąd komunikacji z serwerem!")
+                    else: msg.showerror("Błąd", "Błąd komunikacji z serwerem!")
             except ValueError: pass
 
-        ctk.CTkButton(window, text="ZATWIERDŹ", fg_color="#00E676", text_color="black", command=zapisz).pack(pady=20)
+        ctk.CTkButton(tab_exist, text="ZATWIERDŹ", fg_color="#00E676", text_color="black", command=zapisz_istniejacy).pack(pady=20)
+
+        f = ctk.CTkScrollableFrame(tab_new, fg_color="transparent")
+        f.pack(fill="both", expand=True)
+        
+        ctk.CTkLabel(f, text="Nazwa produktu:").pack(anchor="w")
+        e_name = ctk.CTkEntry(f, placeholder_text="np. Generator"); e_name.pack(fill="x", pady=(0, 10))
+        
+        ctk.CTkLabel(f, text="Kategoria (Wybierz z listy LUB KLIKNIJ I WPISZ WŁASNĄ):", font=("Roboto", 11, "bold"), text_color="#F2A900").pack(anchor="w")
+        
+        current_cats = set(p.get('category', 'Inne') for p in self.app.produkty_db)
+        sorted_cats = sorted(list(current_cats))
+        if not sorted_cats: sorted_cats = ["Inne"]
+        
+        e_cat = ctk.CTkComboBox(f, values=sorted_cats)
+        e_cat.set("Inne")
+        e_cat.pack(fill="x", pady=(0, 10))
+        
+        grid = ctk.CTkFrame(f, fg_color="transparent"); grid.pack(fill="x")
+        ctk.CTkLabel(grid, text="Startowa ilość:").grid(row=0, column=0, padx=5, sticky="w")
+        e_qty = ctk.CTkEntry(grid, width=100); e_qty.grid(row=1, column=0, padx=5)
+        ctk.CTkLabel(grid, text="Jednostka:").grid(row=0, column=1, padx=5, sticky="w")
+        e_unit = ctk.CTkEntry(grid, width=100, placeholder_text="szt"); e_unit.grid(row=1, column=1, padx=5)
+
+        ctk.CTkLabel(f, text="Cena (Tokeny):").pack(anchor="w", pady=(10,0))
+        e_price = ctk.CTkEntry(f); e_price.pack(fill="x", pady=(0, 10))
+        
+        ctk.CTkLabel(f, text="Limit darmowy / Max:").pack(anchor="w")
+        grid2 = ctk.CTkFrame(f, fg_color="transparent"); grid2.pack(fill="x")
+        e_free = ctk.CTkEntry(grid2, width=100, placeholder_text="Free"); e_free.pack(side="left", padx=5)
+        e_max = ctk.CTkEntry(grid2, width=100, placeholder_text="Max"); e_max.pack(side="left", padx=5)
+
+        def dodaj_nowy():
+            try:
+                nazwa = e_name.get().strip()
+                kategoria = e_cat.get().strip()
+                if not nazwa: return
+                if not kategoria: kategoria = "Inne"
+
+                raw_qty = e_qty.get().replace(',', '.')
+                raw_price = e_price.get().replace(',', '.')
+                raw_free = e_free.get().replace(',', '.')
+                raw_max = e_max.get().replace(',', '.')
+
+                ilosc = float(raw_qty) if raw_qty else 0.0
+                cena = float(raw_price) if raw_price else 0.0
+                l_free = int(float(raw_free)) if raw_free else 0
+                l_max = int(float(raw_max)) if raw_max else 10
+
+                sukces = dodaj_nowy_produkt_db(
+                    nazwa=nazwa,
+                    kategoria=kategoria,
+                    ilosc=ilosc,
+                    jednostka=e_unit.get(),
+                    cena_extra=cena,
+                    limit_free=l_free,
+                    limit_max=l_max
+                )
+                if sukces:
+                    self.app.odswiez_dane()
+                    self.odswiez_magazyn()
+                    window.destroy()
+                    self.pokaz_custom_popup("SUKCES", "Utworzono nowy produkt!")
+                else:
+                    msg.showerror("Błąd", "Nie udało się utworzyć produktu.")
+            except ValueError:
+                msg.showerror("Błąd", "Sprawdź liczby!")
+
+        ctk.CTkButton(f, text="+ UTWÓRZ W BAZIE", fg_color="#cf3030", hover_color="#8a1c1c", command=dodaj_nowy).pack(pady=20)

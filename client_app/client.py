@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import datetime
-from api_service import pobierz_produkty, wyslij_transakcje, pobierz_historie
+from api_service import pobierz_produkty, wyslij_transakcje, pobierz_historie, sprawdz_uzytkownika, zaktualizuj_saldo
 
 from views.login_view import LoginView
 from views.resident_view import ResidentView
@@ -21,9 +21,9 @@ class SystemDystrybucjiApp(ctk.CTk):
         self.odswiez_dane()
         
         self.uzycie_globalne = {}
-        self.salda_uzytkownikow = {"USER_123": 50, "ADMIN_999": 999}
         self.koszyk_uzytkownika = {}
         self.aktualny_uzytkownik = None
+        self.user_card_id = None
         self.saldo_sesji = 0
 
         self.main_container = ctk.CTkFrame(self)
@@ -43,19 +43,57 @@ class SystemDystrybucjiApp(ctk.CTk):
     def pokaz_ekran_logowania(self):
         self.wyczysc_ekran()
         self.aktualny_uzytkownik = None
+        self.user_card_id = None
         LoginView(self.main_container, self)
 
     def zaloguj_uzytkownika(self, user_id):
-        self.aktualny_uzytkownik = user_id
+        user_data = sprawdz_uzytkownika(user_id)
+        
+        if not user_data:
+            from tkinter import messagebox
+            messagebox.showerror("Błąd", "Nieznana karta / Użytkownik nie istnieje.")
+            return
+
+        self.aktualny_uzytkownik = user_data['name']
+        self.user_card_id = user_data['card_id']
+        self.saldo_sesji = user_data['balance']
+        role = user_data['role']
+
         self.odswiez_dane()
         
-        if user_id == "ADMIN_999":
+        if role == "admin":
             self.pokaz_ekran_magazynu()
         else:
-            if user_id not in self.uzycie_globalne: self.uzycie_globalne[user_id] = {}
-            self.saldo_sesji = self.salda_uzytkownikow.get(user_id, 50)
+            self.przelicz_uzycie_z_historii() 
             self.koszyk_uzytkownika = {}
             self.pokaz_ekran_mieszkanca()
+
+    def przelicz_uzycie_z_historii(self):
+        """Oblicza zużycie limitów TYLKO dla dzisiejszej daty"""
+        self.uzycie_globalne[self.aktualny_uzytkownik] = {}
+        moje_uzycie = {}
+        
+        dzisiaj_str = datetime.datetime.now().strftime("%Y-%m-%d")
+        
+        for wpis in self.historia_zamowien:
+            if wpis.get('user_card_id') == self.user_card_id:
+                
+                czas_transakcji = wpis.get('timestamp', '')[:10]
+                if czas_transakcji != dzisiaj_str:
+                    continue
+
+                p_name = wpis.get('product_name')
+                found_prod = next((p for p in self.produkty_db if p['name'] == p_name), None)
+                
+                if found_prod:
+                    pid = found_prod['id']
+                    taken = abs(wpis['qty_change']) if wpis['qty_change'] < 0 else 0
+                    
+                    current_qty = moje_uzycie.get(pid, 0)
+                    moje_uzycie[pid] = current_qty + taken
+
+        self.uzycie_globalne[self.aktualny_uzytkownik] = moje_uzycie
+        print(f"--- DEBUG: Zużycie na dzień {dzisiaj_str}: {moje_uzycie}")
 
     def pokaz_ekran_mieszkanca(self):
         self.wyczysc_ekran()
@@ -90,6 +128,7 @@ class SystemDystrybucjiApp(ctk.CTk):
                 p = next((x for x in self.produkty_db if x['id'] == pid), None)
                 if p:
                     juz_pobrano = self.uzycie_globalne[self.aktualny_uzytkownik].get(pid, 0)
+                    
                     limit_free = p.get('limit_free', 0)
                     free_left = max(0, limit_free - juz_pobrano)
                     platne = max(0, ilosc - free_left)
@@ -104,29 +143,33 @@ class SystemDystrybucjiApp(ctk.CTk):
         sukces = True
         for pid, ilosc in self.koszyk_uzytkownika.items():
             if ilosc > 0:
-                if not wyslij_transakcje(pid, -ilosc, self.aktualny_uzytkownik):
+                if not wyslij_transakcje(pid, -ilosc, self.user_card_id):
                     sukces = False
         
         if sukces:
-            self.salda_uzytkownikow[self.aktualny_uzytkownik] -= koszt
-            self.saldo_sesji -= koszt
-            
+            if koszt > 0:
+                if zaktualizuj_saldo(self.user_card_id, koszt):
+                    print(f"--- DEBUG: Zaktualizowano saldo na serwerze (-{koszt} T)")
+                    self.saldo_sesji -= koszt
+                else:
+                    print("!!! BŁĄD: Nie udało się zaktualizować salda na serwerze!")
+
             for pid, ilosc in self.koszyk_uzytkownika.items():
                 if ilosc > 0:
                     used = self.uzycie_globalne[self.aktualny_uzytkownik].get(pid, 0)
                     self.uzycie_globalne[self.aktualny_uzytkownik][pid] = used + ilosc
 
             self.koszyk_uzytkownika = {}
-            
             self.odswiez_dane()
-            
             return True
         return False
 
     def pokaz_custom_popup(self, tytul, podtytul):
         popup = ctk.CTkToplevel(self)
-        x = self.winfo_x() + (self.winfo_width()//2) - 200
-        y = self.winfo_y() + (self.winfo_height()//2) - 150
+        try:
+            x = self.winfo_x() + (self.winfo_width()//2) - 200
+            y = self.winfo_y() + (self.winfo_height()//2) - 150
+        except: x, y = 100, 100
         popup.geometry(f"400x300+{x}+{y}")
         popup.attributes("-topmost", True)
         

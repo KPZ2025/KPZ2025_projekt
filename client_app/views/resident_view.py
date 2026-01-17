@@ -1,6 +1,5 @@
 import customtkinter as ctk
 import tkinter.messagebox as msg
-# Importujemy funkcje API do obsługi giełdy
 from api_service import pobierz_oferty, dodaj_oferte, usun_oferte
 
 class ResidentView(ctk.CTkFrame):
@@ -28,30 +27,59 @@ class ResidentView(ctk.CTkFrame):
         self.tab_view.pack(fill="both", expand=True, padx=10, pady=10)
         self.tab_sklep = self.tab_view.add("MAGAZYN")
         self.tab_gielda = self.tab_view.add("GIEŁDA")
+        
+        self.store_left_frame = ctk.CTkFrame(self.tab_sklep, fg_color="transparent")
+        self.store_left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        
+        self.store_right_frame = ctk.CTkFrame(self.tab_sklep, width=320, fg_color="#222222", corner_radius=15)
+        self.store_right_frame.pack(side="right", fill="y")
+        self.store_right_frame.pack_propagate(False)
 
+        self.aktualna_kategoria = "WSZYSTKIE"
         self.zbuduj_sklep()
         self.zbuduj_gielde()
 
     def zbuduj_sklep(self):
-        for widget in self.tab_sklep.winfo_children(): widget.destroy()
+        for w in self.store_left_frame.winfo_children(): w.destroy()
+        for w in self.store_right_frame.winfo_children(): w.destroy()
 
-        products_scroll = ctk.CTkScrollableFrame(self.tab_sklep, label_text="DOSTĘPNE ZASOBY")
-        products_scroll.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        unikalne_kategorie = set()
+        for p in self.app.produkty_db:
+            cat = p.get('category', 'Inne')
+            if cat: unikalne_kategorie.add(cat)
+        
+        categories = ["WSZYSTKIE"] + sorted(list(unikalne_kategorie))
+
+        if self.aktualna_kategoria not in categories:
+            self.aktualna_kategoria = "WSZYSTKIE"
+
+        self.filter_bar = ctk.CTkSegmentedButton(self.store_left_frame, values=categories, 
+                                                 command=self.zmien_kategorie,
+                                                 selected_color="#1F6AA5", unselected_color="#333")
+        self.filter_bar.set(self.aktualna_kategoria)
+        self.filter_bar.pack(fill="x", pady=(0, 10))
+
+        products_scroll = ctk.CTkScrollableFrame(self.store_left_frame, label_text=f"ZASOBY: {self.aktualna_kategoria}")
+        products_scroll.pack(fill="both", expand=True)
         products_scroll.grid_columnconfigure(0, weight=1); products_scroll.grid_columnconfigure(1, weight=1)
 
-        for index, produkt in enumerate(self.app.produkty_db):
-            row = index // 2; col = index % 2
-            self.stworz_karte_produktu(products_scroll, produkt, row, col)
+        row, col = 0, 0
+        for produkt in self.app.produkty_db:
+            kategoria_produktu = produkt.get('category', 'Inne')
+            
+            if self.aktualna_kategoria == "WSZYSTKIE" or kategoria_produktu == self.aktualna_kategoria:
+                self.stworz_karte_produktu(products_scroll, produkt, row, col)
+                col += 1
+                if col > 1:
+                    col = 0
+                    row += 1
 
-        cart_panel = ctk.CTkFrame(self.tab_sklep, width=320, fg_color="#222222", corner_radius=15)
-        cart_panel.pack(side="right", fill="y")
+        ctk.CTkLabel(self.store_right_frame, text="PODSUMOWANIE", font=("Impact", 20), text_color="#F2A900").pack(pady=20)
         
-        ctk.CTkLabel(cart_panel, text="PODSUMOWANIE", font=("Impact", 20), text_color="#F2A900").pack(pady=20)
-        
-        self.cart_items_frame = ctk.CTkScrollableFrame(cart_panel, fg_color="transparent")
+        self.cart_items_frame = ctk.CTkScrollableFrame(self.store_right_frame, fg_color="transparent")
         self.cart_items_frame.pack(fill="both", expand=True, padx=10)
         
-        footer = ctk.CTkFrame(cart_panel, fg_color="transparent")
+        footer = ctk.CTkFrame(self.store_right_frame, fg_color="transparent")
         footer.pack(side="bottom", fill="x", pady=20, padx=20)
         
         self.lbl_total_koszt = ctk.CTkLabel(footer, text="KOSZT: 0 T", font=("Roboto", 16, "bold"), text_color="#FFD700")
@@ -63,6 +91,10 @@ class ResidentView(ctk.CTkFrame):
         self.btn_confirm.pack(fill="x")
         self.odswiez_widok_koszyka()
 
+    def zmien_kategorie(self, nowa_kat):
+        self.aktualna_kategoria = nowa_kat
+        self.zbuduj_sklep()
+
     def stworz_karte_produktu(self, parent, data, row, col):
         card = ctk.CTkFrame(parent, fg_color="#2b2b2b", border_width=2, border_color="#333333", width=250, height=340)
         card.grid(row=row, column=col, padx=10, pady=10); card.pack_propagate(False)
@@ -71,6 +103,7 @@ class ResidentView(ctk.CTkFrame):
         limit_max = data.get('limit_max', 10)
         extra_price = data.get('extra_price', 0)
         name = data.get('name', '???')
+        category = data.get('category', '')
         stock_qty = data.get('qty', 0)
         unit = data.get('unit', '')
         
@@ -82,12 +115,16 @@ class ResidentView(ctk.CTkFrame):
         platne_dostepne = max(0, pozostalo_total - pozostalo_free)
 
         header = ctk.CTkFrame(card, fg_color="transparent"); header.pack(fill="x", padx=10, pady=5)
-        ctk.CTkLabel(header, text=name, font=("Roboto", 18, "bold")).pack(side="left")
-        ctk.CTkLabel(header, text=f"Extra: {extra_price}T", font=("Roboto", 12), text_color="#FFD700").pack(side="right")
+        ctk.CTkLabel(header, text=name, font=("Roboto", 16, "bold")).pack(side="left", anchor="w")
+        
+        price_color = "#FFD700" if extra_price > 0 else "gray"
+        ctk.CTkLabel(header, text=f"{extra_price}T", font=("Roboto", 12, "bold"), text_color=price_color).pack(side="right")
 
-        bar_frame = ctk.CTkFrame(card, fg_color="transparent"); bar_frame.pack(fill="x", padx=20, pady=(15, 15))
-        ctk.CTkLabel(bar_frame, text=f"Stan magazynu ({stock_qty} {unit}):", font=("Roboto", 10), text_color="gray").pack(anchor="w")
-        progress = ctk.CTkProgressBar(bar_frame, height=10, progress_color="#1F6AA5")
+        ctk.CTkLabel(card, text=category.upper(), font=("Arial", 10), text_color="#1F6AA5").pack(anchor="w", padx=10)
+
+        bar_frame = ctk.CTkFrame(card, fg_color="transparent"); bar_frame.pack(fill="x", padx=20, pady=(10, 10))
+        ctk.CTkLabel(bar_frame, text=f"Stan: {stock_qty} {unit}", font=("Roboto", 10), text_color="gray").pack(anchor="w")
+        progress = ctk.CTkProgressBar(bar_frame, height=8, progress_color="#1F6AA5")
         fill_level = stock_qty / 100
         if fill_level > 1.0: fill_level = 1.0
         progress.set(fill_level); progress.pack(fill="x", pady=5)
@@ -115,8 +152,8 @@ class ResidentView(ctk.CTkFrame):
         if delta > 0:
             limit_max = prod.get('limit_max', 999)
             w_koszyku = self.app.koszyk_uzytkownika.get(id_prod, 0)
-            uzycie = self.app.uzycie_globalne.get(self.app.aktualny_uzytkownik, {}).get(id_prod, 0)
-            if w_koszyku >= max(0, limit_max - uzycie): return
+            uzycie = self.app.uzycie_globalne.get(self.app.aktualny_uzytkownik, {})
+            if w_koszyku >= max(0, limit_max - uzycie.get(id_prod, 0)): return
             if w_koszyku >= prod.get('qty', 0): return
         self.app.zmien_ilosc_w_koszyku(id_prod, delta)
         self.odswiez_widok_koszyka()
@@ -152,13 +189,17 @@ class ResidentView(ctk.CTkFrame):
         
         for p in self.app.produkty_db:
             if 'label_ref' in p:
-                qty = self.app.koszyk_uzytkownika.get(p['id'], 0)
-                p['label_ref'].configure(text=str(qty))
-                uzycie = self.app.uzycie_globalne.get(self.app.aktualny_uzytkownik, {}).get(p['id'], 0)
-                darmowe_dostepne = max(0, p.get('limit_free', 0) - uzycie)
-                if qty > darmowe_dostepne: p['label_ref'].configure(text_color="#FFD700")
-                elif qty > 0: p['label_ref'].configure(text_color="#00E676")
-                else: p['label_ref'].configure(text_color="white")
+                try:
+                    qty = self.app.koszyk_uzytkownika.get(p['id'], 0)
+                    p['label_ref'].configure(text=str(qty))
+                    
+                    uzycie = self.app.uzycie_globalne.get(self.app.aktualny_uzytkownik, {}).get(p['id'], 0)
+                    darmowe_dostepne = max(0, p.get('limit_free', 0) - uzycie)
+                    if qty > darmowe_dostepne: p['label_ref'].configure(text_color="#FFD700")
+                    elif qty > 0: p['label_ref'].configure(text_color="#00E676")
+                    else: p['label_ref'].configure(text_color="white")
+                except:
+                    pass
 
     def wyslij_zamowienie(self):
         if self.app.realizuj_zakup():
@@ -179,32 +220,22 @@ class ResidentView(ctk.CTkFrame):
         
         self.offers_scroll = ctk.CTkScrollableFrame(self.tab_gielda, label_text="TABLICA OGŁOSZEŃ")
         self.offers_scroll.pack(fill="both", expand=True)
-        self.offers_scroll.grid_columnconfigure(0, weight=1)
-        self.offers_scroll.grid_columnconfigure(1, weight=1)
-        self.offers_scroll.grid_columnconfigure(2, weight=1)
-        
+        self.offers_scroll.grid_columnconfigure(0, weight=1); self.offers_scroll.grid_columnconfigure(1, weight=1); self.offers_scroll.grid_columnconfigure(2, weight=1)
         self.odswiez_gielde()
 
     def odswiez_gielde(self):
         for w in self.offers_scroll.winfo_children(): w.destroy()
-        
         oferty = pobierz_oferty()
-        
         for i, of in enumerate(oferty):
             self.stworz_karte_oferty(self.offers_scroll, of, i//3, i%3)
 
     def stworz_karte_oferty(self, parent, oferta, row, col):
         card = ctk.CTkFrame(parent, fg_color="#333", border_color="gray", border_width=1)
         card.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
-        
         ctk.CTkLabel(card, text=oferta['user'], font=("Roboto", 12, "bold"), text_color="#1F6AA5").pack(pady=5)
-        
-        exch = ctk.CTkFrame(card, fg_color="transparent")
-        exch.pack(pady=10)
-        
+        exch = ctk.CTkFrame(card, fg_color="transparent"); exch.pack(pady=10)
         txt_daje = f"{oferta['daje_nazwa']} x{oferta['daje_ilosc']}"
         txt_szuka = f"{oferta['szuka_nazwa']} x{oferta['szuka_ilosc']}"
-
         ctk.CTkLabel(exch, text=txt_daje, font=("Arial", 14, "bold"), text_color="#ccc").pack(side="left", padx=5)
         ctk.CTkLabel(exch, text="➔", font=("Arial", 20), text_color="#F2A900").pack(side="left", padx=5)
         ctk.CTkLabel(exch, text=txt_szuka, font=("Arial", 14, "bold"), text_color="#ccc").pack(side="left", padx=5)
@@ -221,8 +252,7 @@ class ResidentView(ctk.CTkFrame):
             else:
                 msg.showerror("Błąd", "Nie udało się zaakceptować oferty.")
 
-        ctk.CTkButton(card, text=btn_text, fg_color=btn_color, state=btn_state, height=30, 
-                      command=akceptuj).pack(pady=10, padx=20, fill="x")
+        ctk.CTkButton(card, text=btn_text, fg_color=btn_color, state=btn_state, height=30, command=akceptuj).pack(pady=10, padx=20, fill="x")
 
     def dodaj_oferte_popup(self):
         window = ctk.CTkToplevel(self)
@@ -230,13 +260,10 @@ class ResidentView(ctk.CTkFrame):
             x = self.app.winfo_x() + (self.app.winfo_width() // 2) - 200
             y = self.app.winfo_y() + (self.app.winfo_height() // 2) - 200
         except: x, y = 100, 100
-        
         window.geometry(f"400x400+{x}+{y}")
-        window.attributes("-topmost", True)
-        window.grab_set()
+        window.attributes("-topmost", True); window.grab_set()
 
         ctk.CTkLabel(window, text="KREATOR WYMIANY", font=("Impact", 20), text_color="#F2A900").pack(pady=15)
-        
         prod_names = [p['name'] for p in self.app.produkty_db]
         
         frame_daje = ctk.CTkFrame(window, fg_color="transparent"); frame_daje.pack(pady=5)
@@ -252,7 +279,6 @@ class ResidentView(ctk.CTkFrame):
         def save():
             d_val = e_daje.get() if e_daje.get() else "1"
             s_val = e_szuka.get() if e_szuka.get() else "1"
-            
             if dodaj_oferte(self.app.aktualny_uzytkownik, c_daje.get(), d_val, c_szuka.get(), s_val):
                 self.odswiez_gielde()
                 window.destroy()
@@ -262,24 +288,16 @@ class ResidentView(ctk.CTkFrame):
         ctk.CTkButton(window, text="DODAJ OGŁOSZENIE", fg_color="#2cc985", text_color="black", command=save).pack(pady=20)
 
     def pokaz_custom_popup(self, tytul, podtytul):
-        """Wyświetla okienko sukcesu z dużym zielonym ptaszkiem"""
         popup = ctk.CTkToplevel(self)
         try:
             x = self.app.winfo_x() + (self.app.winfo_width()//2) - 250
             y = self.app.winfo_y() + (self.app.winfo_height()//2) - 175
         except: x, y = 100, 100
-        
         popup.geometry(f"500x350+{x}+{y}")
-        popup.overrideredirect(True)
-        popup.attributes("-topmost", True)
-        popup.grab_set()
-        
+        popup.overrideredirect(True); popup.attributes("-topmost", True); popup.grab_set()
         frame = ctk.CTkFrame(popup, fg_color="#111", border_width=4, border_color="#00E676")
         frame.pack(fill="both", expand=True)
-        
         ctk.CTkLabel(frame, text="✔", font=("Arial", 80), text_color="#00E676").pack(pady=(40, 10))
         ctk.CTkLabel(frame, text=tytul, font=("Impact", 30), text_color="white").pack(pady=5)
         ctk.CTkLabel(frame, text=podtytul, font=("Roboto", 14), text_color="#aaa").pack(pady=10)
-        
-        ctk.CTkButton(frame, text="OK", font=("Roboto", 16, "bold"), fg_color="#00E676", text_color="black", 
-                      height=50, width=200, command=popup.destroy).pack(pady=30)
+        ctk.CTkButton(frame, text="OK", font=("Roboto", 16, "bold"), fg_color="#00E676", text_color="black", height=50, width=200, command=popup.destroy).pack(pady=30)

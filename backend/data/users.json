@@ -1,0 +1,20 @@
+[
+    {
+        "card_id": "USER_123",
+        "name": "Jan Kowalski",
+        "role": "resident",
+        "balance": 500.0
+    },
+    {
+        "card_id": "ADMIN_999",
+        "name": "Magazynier Szef",
+        "role": "admin",
+        "balance": 9999.0
+    },
+    {
+        "card_id": "TEST_001",
+        "name": "Anna Nowak",
+        "role": "resident",
+        "balance": 20.0
+    }
+]

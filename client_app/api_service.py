@@ -66,3 +66,43 @@ def usun_oferte(offer_id):
     except Exception as e:
         print(f"Błąd API (usuń ofertę): {e}")
         return False
+
+def dodaj_nowy_produkt_db(nazwa, kategoria, ilosc, jednostka, cena_extra, limit_free, limit_max):
+    """Wysyła żądanie utworzenia zupełnie nowego produktu"""
+    payload = {
+        "id": 0,
+        "name": nazwa,
+        "category": kategoria,
+        "qty": float(ilosc),
+        "unit": jednostka,
+        "status": "OK",
+        "extra_price": float(cena_extra),
+        "limit_free": int(limit_free),
+        "limit_max": int(limit_max)
+    }
+    try:
+        response = requests.post(f"{SERVER_URL}/api/products", json=payload)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Błąd API (dodaj produkt): {e}")
+        return False
+
+def sprawdz_uzytkownika(card_id):
+    """Pyta serwer o dane użytkownika na podstawie karty"""
+    try:
+        response = requests.get(f"{SERVER_URL}/api/users/{card_id}")
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        print(f"Błąd logowania: {e}")
+    return None
+
+def zaktualizuj_saldo(card_id, kwota_do_odjecia):
+    """Wysyła informację o zmianie salda do serwera (trwała zmiana w users.json)"""
+    payload = {"amount": float(kwota_do_odjecia)}
+    try:
+        response = requests.post(f"{SERVER_URL}/api/users/{card_id}/charge", json=payload)
+        return response.status_code == 200
+    except Exception as e:
+        print(f"Błąd API (saldo): {e}")
+        return False
