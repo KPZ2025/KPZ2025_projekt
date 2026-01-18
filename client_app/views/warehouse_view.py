@@ -193,7 +193,7 @@ class WarehouseView(ctk.CTkFrame):
                 nazwa = combo.get()
                 prod = next((p for p in self.app.produkty_db if p['name'] == nazwa), None)
                 if prod:
-                    if wyslij_transakcje(prod['id'], ilosc, self.app.aktualny_uzytkownik):
+                    if wyslij_transakcje(prod['id'], ilosc, self.app.user_card_id):
                         self.app.odswiez_dane()
                         self.odswiez_magazyn()
                         window.destroy()

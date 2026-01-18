@@ -3,7 +3,6 @@ import os
 import uuid
 from datetime import datetime
 from typing import List, Optional
-# ZMIANA: Dodano BaseModel
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
 from database import Product, load_json_file, DB_FILE, TransactionInput, TRANS_FILE, save_json_file, TransactionHistoryEntry, ExchangeOffer, EXCHANGE_FILE, User, USERS_FILE

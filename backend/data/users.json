@@ -3,7 +3,7 @@
         "card_id": "USER_123",
         "name": "Jan Kowalski",
         "role": "resident",
-        "balance": 500.0
+        "balance": 122.0
     },
     {
         "card_id": "ADMIN_999",

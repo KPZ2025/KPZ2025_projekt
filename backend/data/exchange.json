@@ -1,0 +1,50 @@
+[
+    {
+        "id": "87f75a72-ed1a-447c-abd9-49d3f3b8d83f",
+        "user": "Jan Kowalski",
+        "daje_nazwa": "Woda (Butelka 1.5L)",
+        "daje_ilosc": 5,
+        "szuka_nazwa": "Zestaw do szycia ran",
+        "szuka_ilosc": 1
+    },
+    {
+        "id": "npc_664480c7-ef91-4d6e-9536-17849c20f154",
+        "user": "Ewa_20",
+        "daje_nazwa": "Woda",
+        "daje_ilosc": 3,
+        "szuka_nazwa": "Leki",
+        "szuka_ilosc": 4
+    },
+    {
+        "id": "npc_24161c6b-5c1a-474c-bd0b-6726dcfcaa29",
+        "user": "Marek_70",
+        "daje_nazwa": "Ryż",
+        "daje_ilosc": 2,
+        "szuka_nazwa": "Makaron",
+        "szuka_ilosc": 7
+    },
+    {
+        "id": "npc_6ff58407-d227-43e3-8cc2-32cc0d79cbb6",
+        "user": "Zygmunt_23",
+        "daje_nazwa": "Ryż",
+        "daje_ilosc": 2,
+        "szuka_nazwa": "Leki",
+        "szuka_ilosc": 3
+    },
+    {
+        "id": "npc_fa367cd5-ceb2-49b8-a0cc-1bbd4e258663",
+        "user": "Kasia_85",
+        "daje_nazwa": "Makaron",
+        "daje_ilosc": 1,
+        "szuka_nazwa": "Chleb",
+        "szuka_ilosc": 9
+    },
+    {
+        "id": "npc_a2d36fb9-51c9-4089-8ef4-e6566b7231a3",
+        "user": "Ewa_11",
+        "daje_nazwa": "Leki",
+        "daje_ilosc": 4,
+        "szuka_nazwa": "Makaron",
+        "szuka_ilosc": 5
+    }
+]
