@@ -261,7 +261,9 @@ class ResidentView(ctk.CTkFrame):
             y = self.app.winfo_y() + (self.app.winfo_height() // 2) - 200
         except: x, y = 100, 100
         window.geometry(f"400x400+{x}+{y}")
-        window.attributes("-topmost", True); window.grab_set()
+        window.attributes("-topmost", True)
+        window.wait_visibility()
+        window.grab_set()
 
         ctk.CTkLabel(window, text="KREATOR WYMIANY", font=("Impact", 20), text_color="#F2A900").pack(pady=15)
         prod_names = [p['name'] for p in self.app.produkty_db]

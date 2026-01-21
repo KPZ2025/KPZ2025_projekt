@@ -143,3 +143,25 @@ def add_new_product(prod: Product):
     save_json_file(DB_FILE, products)
     
     return {"message": "Produkt dodany", "id": new_id}
+
+
+class RFIDData(BaseModel):
+    card_id: str
+
+LAST_RFID = None
+
+@app.post("/api/rfid")
+def rfid_scan(data: RFIDData):
+    global LAST_RFID
+    LAST_RFID = data.card_id
+    print(f"Server: Odebrano ID z czytnika: {LAST_RFID}")
+    return {"ok": True}
+
+# 2. Tędy pyta GUI (Aplikacja pobiera dane)
+@app.get("/api/rfid")
+def get_rfid():
+    global LAST_RFID
+    temp = LAST_RFID
+    LAST_RFID = None
+    
+    return {"card_id": temp}

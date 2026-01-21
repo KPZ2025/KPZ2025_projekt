@@ -16,5 +16,17 @@
         "name": "Anna Nowak",
         "role": "resident",
         "balance": 20.0
+    },
+    {
+        "card_id": "44389335313",
+        "name": "Anna Nowak",
+        "role": "resident",
+        "balance": 20.0
+    },
+    {
+        "card_id": "4438933531",
+        "name": "Jan Kowalski",
+        "role": "admin",
+        "balance": 9999.0
     }
 ]
