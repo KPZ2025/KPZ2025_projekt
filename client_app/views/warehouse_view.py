@@ -1,9 +1,14 @@
 import customtkinter as ctk
 import tkinter.messagebox as msg
 from datetime import datetime
-from api_service import wyslij_transakcje, dodaj_nowy_produkt_db, pobierz_historie
+# DODANO: zaktualizuj_saldo do importów
+from api_service import wyslij_transakcje, dodaj_nowy_produkt_db, pobierz_historie, zaktualizuj_saldo
 import json
 import os
+import threading
+import requests 
+    
+API_RFID_URL = "http://127.0.0.1:8000/api/rfid"
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(os.path.dirname(current_dir))
@@ -42,7 +47,11 @@ class WarehouseView(ctk.CTkFrame):
         top_bar.pack(fill="x", side="top", pady=(0, 10))
         
         ctk.CTkLabel(top_bar, text="MAGAZYN GŁÓWNY", font=("Impact", 24), text_color="#F2A900").pack(side="left", padx=20)
+        
         ctk.CTkButton(top_bar, text="Wyjdź", command=self.app.pokaz_ekran_logowania, fg_color="#cf3030", width=100).pack(side="right", padx=20)
+        
+        ctk.CTkButton(top_bar, text="💰 ZARZĄDZAJ SALDEM", command=self.pokaz_popup_finansow, 
+                      fg_color="#1F6AA5", width=180).pack(side="right", padx=10)
         
         grid = ctk.CTkFrame(container, fg_color="transparent")
         grid.pack(fill="both", expand=True)
@@ -67,12 +76,25 @@ class WarehouseView(ctk.CTkFrame):
 
     def odswiez_magazyn(self):
         for w in self.inv_sc.winfo_children(): w.destroy()
-        
-        self.app.odswiez_dane()
+        for w in self.ord_sc.winfo_children(): w.destroy()
+
+        lbl_load = ctk.CTkLabel(self.ord_sc, text="Pobieranie danych z serwera...", text_color="#F2A900")
+        lbl_load.pack(pady=20)
+
+        threading.Thread(target=self._download_data, daemon=True).start()
+    
+    def _download_data(self):
+        self.app.odswiez_dane(products_only=False)
+        self.after(0, self._mount_ui)
+
+    def _mount_ui(self):
+        if not self.winfo_exists(): return
+
+        for w in self.inv_sc.winfo_children(): w.destroy()
+        for w in self.ord_sc.winfo_children(): w.destroy()
+
         sorted_products = sorted(self.app.produkty_db, key=lambda x: x['id'])
         for p in sorted_products: self.stworz_kafelek_magazynowy(self.inv_sc, p)
-            
-        for w in self.ord_sc.winfo_children(): w.destroy()
         
         historia = pobierz_historie()
         
@@ -170,6 +192,99 @@ class WarehouseView(ctk.CTkFrame):
         ctk.CTkLabel(frame, text=tytul, font=("Impact", 30), text_color="white").pack(pady=5)
         ctk.CTkLabel(frame, text=podtytul, font=("Roboto", 14), text_color="#aaa").pack(pady=10)
         ctk.CTkButton(frame, text="OK", font=("Roboto", 16, "bold"), fg_color="#00E676", text_color="black", height=50, width=200, command=popup.destroy).pack(pady=30)
+
+    def pokaz_popup_finansow(self):
+        window = ctk.CTkToplevel(self)
+        window.geometry("450x450")
+        window.title("Finanse Użytkownika")
+        window.attributes("-topmost", True)
+        window.grab_set()
+        
+        ctk.CTkLabel(window, text="ZARZĄDZANIE SALDEM", font=("Impact", 20), text_color="#1F6AA5").pack(pady=20)
+        
+        ctk.CTkLabel(window, text="ID Karty Użytkownika (Zeskanuj):").pack(pady=(10, 5))
+        e_card = ctk.CTkEntry(window, placeholder_text="Przyłóż kartę...", width=250)
+        e_card.pack(pady=5)
+        
+        ctk.CTkLabel(window, text="Kwota Tokenów:").pack(pady=(15, 5))
+        e_amount = ctk.CTkEntry(window, placeholder_text="0", width=250)
+        e_amount.pack(pady=5)
+        
+        ctk.CTkLabel(window, text="Rodzaj Operacji:").pack(pady=(15, 5))
+        op_var = ctk.StringVar(value="DODAJ")
+        
+        seg_op = ctk.CTkSegmentedButton(window, values=["DODAJ ŚRODKI (+)", "OBCIĄŻ KONTO (-)"],
+                                        command=lambda v: op_var.set("DODAJ" if "+" in v else "ODEJMIJ"),
+                                        selected_color="#285A42", selected_hover_color="#397659",
+                                        unselected_color="#070505", unselected_hover_color="#a12525")
+        seg_op.set("DODAJ ŚRODKI (+)")
+        seg_op.pack(pady=10)
+
+        def nasluchuj_rfid():
+            if not window.winfo_exists():
+                return
+
+            try:
+                response = requests.get(API_RFID_URL, timeout=0.5)
+                if response.status_code == 200:
+                    data = response.json()
+                    card_id = data.get("card_id")
+                    
+                    if card_id and e_card.get() != str(card_id):
+                        e_card.delete(0, 'end')
+                        e_card.insert(0, str(card_id))
+                        e_card.configure(border_color="#00E676", border_width=2)
+                        print(f"DEBUG: Wpisano kartę z czytnika: {card_id}")
+            except Exception:
+                pass
+            
+            window.after(1000, nasluchuj_rfid)
+
+        nasluchuj_rfid()
+
+        def zatwierdz_operacje():
+            card_id = e_card.get().strip()
+            amount_str = e_amount.get().strip().replace(',', '.')
+            
+            if not card_id:
+                msg.showerror("Błąd", "Podaj ID karty!")
+                return
+            
+            try:
+                amount = float(amount_str)
+                if amount <= 0:
+                    msg.showerror("Błąd", "Kwota musi być dodatnia!")
+                    return
+            except ValueError:
+                msg.showerror("Błąd", "Nieprawidłowa kwota!")
+                return
+            
+            final_amount_to_send = 0
+            mode = op_var.get()
+            
+            if mode == "DODAJ":
+                final_amount_to_send = -amount
+                msg_succ = f"Dodano {amount} T"
+            else:
+                final_amount_to_send = amount
+                msg_succ = f"Obciążono {amount} T"
+
+            threading.Thread(target=self._wykonaj_transakcje_saldo, 
+                             args=(card_id, final_amount_to_send, window, msg_succ), 
+                             daemon=True).start()
+
+        ctk.CTkButton(window, text="WYKONAJ", command=zatwierdz_operacje, 
+                      fg_color="#F2A900", text_color="black", font=("Arial", 14, "bold"), height=40).pack(pady=30)
+
+    def _wykonaj_transakcje_saldo(self, card_id, amount, window, success_msg):
+        if zaktualizuj_saldo(card_id, amount):
+            self.after(0, lambda: self._po_udanym_saldzie(window, success_msg))
+        else:
+            self.after(0, lambda: msg.showerror("Błąd", "Nie udało się zaktualizować salda.\nSprawdź ID karty lub połączenie."))
+
+    def _po_udanym_saldzie(self, window, success_msg):
+        window.destroy()
+        self.pokaz_custom_popup("SUKCES", success_msg)
 
     def pokaz_popup_dostawy(self):
         window = ctk.CTkToplevel(self)

@@ -56,6 +56,17 @@ class LoginView(ctk.CTkFrame):
             command=lambda: self.app.zaloguj_uzytkownika("44389335313")
         ).pack(pady=5)
 
+        ctk.CTkButton(
+            btns_frame, 
+            text="WERYFIKACJA DANYCH", 
+            font=("Arial", 12),
+            fg_color="#4A2574",
+            hover_color="#144F7D", 
+            width=200,
+            height=40,
+            command=lambda: self.app.uruchom_test_blockchain()
+        ).pack(pady=5)
+
         footer = ctk.CTkFrame(bg_frame, height=30, fg_color="#111")
         footer.pack(side="bottom", fill="x", pady=10, padx=10)
         self.lbl_status = ctk.CTkLabel(
