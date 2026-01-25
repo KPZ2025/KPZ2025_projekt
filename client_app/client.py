@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import datetime
-from api_service import pobierz_produkty, wyslij_transakcje, pobierz_historie, sprawdz_uzytkownika, zaktualizuj_saldo
-
+from api_service import pobierz_produkty, wyslij_transakcje, pobierz_historie, sprawdz_uzytkownika, zaktualizuj_saldo, sprawdz_blockchain
+import threading
 from views.login_view import LoginView
 from views.resident_view import ResidentView
 from views.warehouse_view import WarehouseView
@@ -31,10 +31,11 @@ class SystemDystrybucjiApp(ctk.CTk):
 
         self.pokaz_ekran_logowania()
 
-    def odswiez_dane(self):
+    def odswiez_dane(self, products_only=False):
         """Pobiera świeże produkty i historię z serwera"""
         self.produkty_db = pobierz_produkty()
-        self.historia_zamowien = pobierz_historie()
+        if not products_only:
+            self.historia_zamowien = pobierz_historie()
 
     def wyczysc_ekran(self):
         for widget in self.main_container.winfo_children():
@@ -47,8 +48,17 @@ class SystemDystrybucjiApp(ctk.CTk):
         LoginView(self.main_container, self)
 
     def zaloguj_uzytkownika(self, user_id):
-        user_data = sprawdz_uzytkownika(user_id)
+        self.configure(cursor="watch")
         
+        threading.Thread(target=self._login_in_background, args=(user_id,), daemon=True).start()
+
+    def _login_in_background(self, user_id):
+        user_data = sprawdz_uzytkownika(user_id)
+
+        self.after(0, lambda: self._finish_login(user_data))
+
+    def _finish_login(self, user_data):
+        self.configure(cursor="arrow")
         if not user_data:
             from tkinter import messagebox
             messagebox.showerror("Błąd", "Nieznana karta / Użytkownik nie istnieje.")
@@ -59,7 +69,7 @@ class SystemDystrybucjiApp(ctk.CTk):
         self.saldo_sesji = user_data['balance']
         role = user_data['role']
 
-        self.odswiez_dane()
+        self.odswiez_dane(products_only=False)
         
         if role == "admin":
             self.pokaz_ekran_magazynu()
@@ -102,6 +112,57 @@ class SystemDystrybucjiApp(ctk.CTk):
     def pokaz_ekran_magazynu(self):
         self.wyczysc_ekran()
         WarehouseView(self.main_container, self)
+
+    def uruchom_test_blockchain(self):
+        self.configure(cursor="watch")
+        threading.Thread(target=self._watek_testu_blockchain, daemon=True).start()
+
+    def _watek_testu_blockchain(self):
+        wynik = sprawdz_blockchain()
+        self.after(0, lambda: self._pokaz_wynik_blockchain(wynik))
+
+    def _pokaz_wynik_blockchain(self, result):
+        self.configure(cursor="arrow")
+        
+        window = ctk.CTkToplevel(self)
+        window.geometry("600x500")
+        window.title("Raport Integralności Systemu")
+        window.attributes("-topmost", True)
+        window.grab_set()
+
+        ctk.CTkLabel(window, text="RAPORT BLOCKCHAIN", font=("Impact", 24)).pack(pady=15)
+
+        is_valid = result.get("chain_valid", False)
+        length = result.get("blockchain_length", 0)
+        
+        status_color = "#00E676" if is_valid else "#FF1744"
+        status_text = "SYSTEM SPÓJNY" if is_valid else "WYKRYTO BŁĘDY!"
+        icon = "🛡️" if is_valid else "⚠️"
+
+        frame_status = ctk.CTkFrame(window, fg_color="transparent", border_width=2, border_color=status_color)
+        frame_status.pack(fill="x", padx=20, pady=10)
+        
+        ctk.CTkLabel(frame_status, text=f"{icon} {status_text}", font=("Arial", 20, "bold"), text_color=status_color).pack(pady=10)
+        ctk.CTkLabel(frame_status, text=f"Długość łańcucha: {length} bloków", text_color="gray").pack(pady=(0, 10))
+
+        errors = result.get("errors", [])
+        if errors:
+            ctk.CTkLabel(window, text="LISTA BŁĘDÓW:", font=("Roboto", 12, "bold"), text_color="#FF1744").pack(pady=(10, 5), anchor="w", padx=20)
+            
+            scroll_err = ctk.CTkScrollableFrame(window, fg_color="#2b0000")
+            scroll_err.pack(fill="both", expand=True, padx=20, pady=10)
+            
+            for err in errors:
+                row = ctk.CTkFrame(scroll_err, fg_color="transparent")
+                row.pack(fill="x", pady=2)
+                ctk.CTkLabel(row, text="❌", text_color="#FF1744").pack(side="left", padx=(0,5))
+                lbl = ctk.CTkLabel(row, text=err, anchor="w", justify="left", wraplength=500)
+                lbl.pack(side="left", fill="x", expand=True)
+        else:
+            ctk.CTkLabel(window, text="Wszystkie bloki są poprawnie powiązane kryptograficznie.\nStany magazynowe i salda zgadzają się z historią.", 
+                         text_color="#aaa", font=("Roboto", 12)).pack(pady=20)
+
+        ctk.CTkButton(window, text="ZAMKNIJ", fg_color="#333", command=window.destroy).pack(pady=20)
 
     def zmien_ilosc_w_koszyku(self, id_prod, delta):
         obecna = self.koszyk_uzytkownika.get(id_prod, 0)
@@ -160,7 +221,7 @@ class SystemDystrybucjiApp(ctk.CTk):
                     self.uzycie_globalne[self.aktualny_uzytkownik][pid] = used + ilosc
 
             self.koszyk_uzytkownika = {}
-            self.odswiez_dane()
+            self.odswiez_dane(products_only=True)
             return True
         return False
 

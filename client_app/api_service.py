@@ -106,3 +106,16 @@ def zaktualizuj_saldo(card_id, kwota_do_odjecia):
     except Exception as e:
         print(f"Błąd API (saldo): {e}")
         return False
+
+def sprawdz_blockchain():
+    try:
+        response = requests.get(f"{SERVER_URL}/api/integrity")
+        if response.status_code == 200:
+            return response.json()
+    except Exception as e:
+        return {
+            "chain_valid": False, 
+            "errors": [f"Błąd połączenia z serwerem: {str(e)}"], 
+            "blockchain_length": 0
+        }
+    return {"chain_valid": False, "errors": ["Nieznany błąd"], "blockchain_length": 0}
