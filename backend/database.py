@@ -2,15 +2,17 @@ import json
 import os
 import random
 import uuid
-from filelock import FileLock
+import hashlib
+from datetime import datetime
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Any
 
 DATA_DIR = 'data'
 DB_FILE = os.path.join(DATA_DIR, 'db.json')
 TRANS_FILE = os.path.join(DATA_DIR, 'transactions.json')
 EXCHANGE_FILE = os.path.join(DATA_DIR, 'exchange.json')
 USERS_FILE = os.path.join(DATA_DIR, 'users.json')
+BLOCKCHAIN_FILE = os.path.join(DATA_DIR, 'blockchain.json')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 
@@ -51,6 +53,71 @@ class User(BaseModel):
     name: str
     role: str
     balance: float
+
+class Block(BaseModel):
+    index: int
+    timestamp: str
+    data: dict
+    previous_hash: str
+    hash: str
+
+def load_json_file(filename) -> List[dict]:
+    if not os.path.exists(filename): return []
+    try:
+        with open(filename, 'r', encoding='utf-8') as f: return json.load(f)
+    except json.JSONDecodeError: return []
+
+def save_json_file(filename, data: List[dict]):
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+def calculate_hash(index: int, timestamp: str, data: dict, previous_hash: str) -> str:
+    data_str = json.dumps(data, sort_keys=True)
+    block_string = f"{index}{timestamp}{data_str}{previous_hash}"
+    return hashlib.sha256(block_string.encode()).hexdigest()
+
+def init_blockchain():
+    if not os.path.exists(BLOCKCHAIN_FILE):
+        genesis_block = {
+            "index": 0,
+            "timestamp": datetime.now().isoformat(),
+            "data": {"message": "Genesis Block - System Start"},
+            "previous_hash": "0",
+            "hash": ""
+        }
+        genesis_block["hash"] = calculate_hash(
+            genesis_block["index"], 
+            genesis_block["timestamp"], 
+            genesis_block["data"], 
+            genesis_block["previous_hash"]
+        )
+        save_json_file(BLOCKCHAIN_FILE, [genesis_block])
+
+def add_blockchain_block(data_payload: dict):
+    chain = load_json_file(BLOCKCHAIN_FILE)
+    if not chain:
+        init_blockchain()
+        chain = load_json_file(BLOCKCHAIN_FILE)
+    
+    last_block = chain[-1]
+    new_index = last_block['index'] + 1
+    new_timestamp = datetime.now().isoformat()
+    prev_hash = last_block['hash']
+    
+    new_hash = calculate_hash(new_index, new_timestamp, data_payload, prev_hash)
+    
+    new_block = {
+        "index": new_index,
+        "timestamp": new_timestamp,
+        "data": data_payload,
+        "previous_hash": prev_hash,
+        "hash": new_hash
+    }
+    
+    chain.append(new_block)
+    save_json_file(BLOCKCHAIN_FILE, chain)
+    print(f"[Blockchain] Dodano blok #{new_index}")
+
 
 def generuj_nowe_oferty_npc(ilosc=3):
     imiona = ["Marek", "Anna", "Piotr", "Kasia", "Zygmunt", "Ewa", "Tomek", "Ola", "Jacek", "Monika"]
@@ -94,12 +161,4 @@ if not os.path.exists(USERS_FILE):
     with open(USERS_FILE, 'w', encoding='utf-8') as f:
         json.dump(STARTOWI_UZYTKOWNICY, f, indent=4, ensure_ascii=False)
 
-def load_json_file(filename) -> List[dict]:
-    if not os.path.exists(filename): return []
-    try:
-        with open(filename, 'r', encoding='utf-8') as f: return json.load(f)
-    except json.JSONDecodeError: return []
-
-def save_json_file(filename, data: List[dict]):
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+init_blockchain()

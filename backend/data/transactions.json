@@ -1,107 +1,289 @@
 [
     {
-        "id": "5cc5091c-7ba9-4c9b-bdd0-022ff8841834",
-        "timestamp": "2026-01-18T12:43:45.764639",
-        "product_id": 1,
-        "qty_change": 2.0,
-        "user_card_id": "ADMIN_999"
-    },
-    {
-        "id": "a915fd3b-4473-464b-b14e-97e5b68d0d2f",
-        "timestamp": "2026-01-18T12:44:15.555866",
-        "product_id": 16,
-        "qty_change": 5.0,
-        "user_card_id": "ADMIN_999"
-    },
-    {
-        "id": "3c9afe96-7427-4bab-87e8-c1cdf4130ea8",
-        "timestamp": "2026-01-18T16:13:30.138888",
-        "product_id": 1,
-        "qty_change": -3.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "22372297-3ace-4191-9a67-100131e1a6dd",
-        "timestamp": "2026-01-18T16:13:30.162435",
-        "product_id": 2,
-        "qty_change": -2.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "79258939-2ef8-4454-a78a-b76b3342c8bf",
-        "timestamp": "2026-01-18T16:13:52.507552",
-        "product_id": 11,
-        "qty_change": 5.0,
-        "user_card_id": "ADMIN_999"
-    },
-    {
-        "id": "1ae352a0-8839-4ebb-afb2-f82444c0dd30",
-        "timestamp": "2026-01-18T16:40:19.402928",
-        "product_id": 1,
-        "qty_change": -2.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "81f53ee1-150d-47cd-984c-c56ebbdfcfcc",
-        "timestamp": "2026-01-18T16:40:19.426466",
-        "product_id": 2,
-        "qty_change": -1.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "2fb7c57a-b28e-4ee4-b135-9dae340c7293",
-        "timestamp": "2026-01-18T16:40:19.437748",
-        "product_id": 51,
-        "qty_change": -2.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "63172c57-2c98-46b0-aee6-79481368af00",
-        "timestamp": "2026-01-18T16:40:19.445736",
-        "product_id": 52,
-        "qty_change": -2.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "3d7cb072-5787-483d-b711-63bb007e9f50",
-        "timestamp": "2026-01-18T16:40:19.452408",
-        "product_id": 11,
-        "qty_change": -1.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "db433895-995d-429f-aa53-d91dc093f87f",
-        "timestamp": "2026-01-18T16:40:19.459758",
-        "product_id": 12,
-        "qty_change": -1.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "110eadd5-cbeb-4365-9819-54ba3153a7c4",
-        "timestamp": "2026-01-18T16:40:19.466335",
-        "product_id": 21,
-        "qty_change": -1.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "287f3acd-6854-4879-b960-f8f995f64276",
-        "timestamp": "2026-01-18T16:40:38.491906",
-        "product_id": 17,
-        "qty_change": 5.0,
-        "user_card_id": "ADMIN_999"
-    },
-    {
-        "id": "c25f58c3-fd2c-4c9d-acc2-29fe95d4e94d",
-        "timestamp": "2026-01-18T16:48:42.787793",
-        "product_id": 1,
-        "qty_change": -2.0,
-        "user_card_id": "USER_123"
-    },
-    {
-        "id": "5b92c459-eaeb-4372-99bd-10ab1bf95ced",
-        "timestamp": "2026-01-18T16:48:59.057864",
+        "id": "7d99e822-418f-42eb-b9a6-9c3ed09ba57b",
+        "timestamp": "2026-01-24T17:01:16.604228",
         "product_id": 1,
         "qty_change": 10.0,
-        "user_card_id": "ADMIN_999"
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "ba8d8d36-4fa0-4227-a14f-c526d64e5afe",
+        "timestamp": "2026-01-24T17:01:40.257043",
+        "product_id": 2,
+        "qty_change": 5.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "a96fa393-954c-49ab-bf0e-30b8a5fbb776",
+        "timestamp": "2026-01-24T17:02:06.446137",
+        "product_id": 4,
+        "qty_change": 100.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "91423b4d-01ab-479c-b145-e8eb2bfc21a6",
+        "timestamp": "2026-01-24T17:02:21.428997",
+        "product_id": 5,
+        "qty_change": 40.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "bedb8e07-2251-44d8-a0d2-35332e832382",
+        "timestamp": "2026-01-24T17:02:45.908120",
+        "product_id": 8,
+        "qty_change": 20.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "4433c713-7b53-4080-8998-cf2771c315aa",
+        "timestamp": "2026-01-24T17:03:01.495141",
+        "product_id": 3,
+        "qty_change": 10.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "5ecee3e2-c315-4e83-b547-d9ce67a57924",
+        "timestamp": "2026-01-24T17:04:51.828371",
+        "product_id": 1,
+        "qty_change": 100.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "5c009d79-66af-496c-a2f9-0243beceb0ab",
+        "timestamp": "2026-01-24T17:05:42.238665",
+        "product_id": 1,
+        "qty_change": -2.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "f58cb1e2-9469-4a5c-84ef-a9dfc7de82aa",
+        "timestamp": "2026-01-24T17:05:42.241601",
+        "product_id": 2,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "50d96e69-c96c-4d92-862a-dd8467971e6b",
+        "timestamp": "2026-01-24T17:09:17.537387",
+        "product_id": 7,
+        "qty_change": 50.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "a19afdb4-b9a6-47ea-a4ae-9ed6ea78cd47",
+        "timestamp": "2026-01-24T17:09:32.440016",
+        "product_id": 10,
+        "qty_change": 20.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "0ecf7934-f676-4d16-a748-a1ec41c8c84c",
+        "timestamp": "2026-01-24T17:09:45.058362",
+        "product_id": 11,
+        "qty_change": 20.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "92783600-1450-441a-a34a-9ae7babdc3c3",
+        "timestamp": "2026-01-24T17:09:58.043325",
+        "product_id": 15,
+        "qty_change": 50.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "78a06d77-105b-4b4f-9c44-231f218a10c1",
+        "timestamp": "2026-01-24T17:10:13.524089",
+        "product_id": 43,
+        "qty_change": 100.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "5682b652-9370-479e-9e0a-53e901ef4a8a",
+        "timestamp": "2026-01-24T17:12:08.676291",
+        "product_id": 1,
+        "qty_change": 20.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "1381fe3a-cea6-435e-aa3d-721166ef4a62",
+        "timestamp": "2026-01-24T17:34:56.041483",
+        "product_id": 17,
+        "qty_change": 100.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "47944623-edaa-40ff-8a51-9ca0f1fdb48a",
+        "timestamp": "2026-01-24T17:36:02.998698",
+        "product_id": 12,
+        "qty_change": 30.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "d75e0829-2af0-4628-829d-a8d82d884e6a",
+        "timestamp": "2026-01-24T17:36:07.713399",
+        "product_id": 13,
+        "qty_change": 40.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "8b95110d-87cd-4848-b161-b656050883bc",
+        "timestamp": "2026-01-24T17:36:11.119200",
+        "product_id": 14,
+        "qty_change": 50.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "1f7390b5-21af-4448-9d45-e3d74dda1060",
+        "timestamp": "2026-01-24T17:36:14.700524",
+        "product_id": 15,
+        "qty_change": 20.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "02995441-6bc6-4592-a56c-c48803b62939",
+        "timestamp": "2026-01-24T17:36:17.646437",
+        "product_id": 16,
+        "qty_change": 25.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "ef4735a3-e055-4b99-bb92-875ac0815588",
+        "timestamp": "2026-01-24T17:36:22.766668",
+        "product_id": 17,
+        "qty_change": 30.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "ac9813d1-1667-4bbb-a14f-7ab4547d55ad",
+        "timestamp": "2026-01-24T17:36:26.581590",
+        "product_id": 18,
+        "qty_change": 90.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "d9548a50-3e47-4f80-9d50-6c1bd8e9575f",
+        "timestamp": "2026-01-24T17:36:30.536986",
+        "product_id": 19,
+        "qty_change": 60.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "4ac2b9aa-64c4-4f8e-9298-7844589e796e",
+        "timestamp": "2026-01-24T17:36:34.525219",
+        "product_id": 20,
+        "qty_change": 50.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "ccbb57cb-789e-46db-b6cb-c43e3353dce2",
+        "timestamp": "2026-01-24T17:36:38.763205",
+        "product_id": 21,
+        "qty_change": 55.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "8bfcdb9e-e010-414f-a0f0-0b737e259aa4",
+        "timestamp": "2026-01-24T17:36:43.579470",
+        "product_id": 22,
+        "qty_change": 85.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "4a79b27b-d57a-4085-b319-4c4b7df28a23",
+        "timestamp": "2026-01-24T17:36:47.759035",
+        "product_id": 26,
+        "qty_change": 81.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "841bb530-705a-4617-b40c-6f3d9ab9f5ea",
+        "timestamp": "2026-01-24T17:36:52.562218",
+        "product_id": 27,
+        "qty_change": 90.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "0cad02eb-7567-4be2-890d-82dd59318635",
+        "timestamp": "2026-01-24T17:36:56.763480",
+        "product_id": 28,
+        "qty_change": 150.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "20cdfd31-6ea1-4276-b230-00bb0fa37056",
+        "timestamp": "2026-01-24T17:37:00.069012",
+        "product_id": 29,
+        "qty_change": 50.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "4bc4cebb-d0e7-4fa9-907b-0c99633eacc7",
+        "timestamp": "2026-01-24T17:37:05.551106",
+        "product_id": 30,
+        "qty_change": 60.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "57a04e8a-bdd8-4897-923b-12731e6b5b84",
+        "timestamp": "2026-01-24T17:37:08.105799",
+        "product_id": 31,
+        "qty_change": 60.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "3047ccdc-f5ca-4609-bf64-68bd8d40ebc7",
+        "timestamp": "2026-01-24T17:37:10.212070",
+        "product_id": 32,
+        "qty_change": 60.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "58608978-860e-44b9-8087-de29b1b6a2d7",
+        "timestamp": "2026-01-24T17:37:12.610338",
+        "product_id": 33,
+        "qty_change": 60.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "e0bb515f-8014-4f2e-b301-06c86f179ac0",
+        "timestamp": "2026-01-24T17:40:01.272853",
+        "product_id": 4,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "df681b20-3a06-4c1e-9d35-83fdd5ed473b",
+        "timestamp": "2026-01-24T17:40:01.276951",
+        "product_id": 12,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "0c13fc8e-3b6b-42f2-bf39-8381f7d8e755",
+        "timestamp": "2026-01-24T17:50:35.514266",
+        "product_id": 1,
+        "qty_change": 10.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "b73782f7-d50a-4b40-afe1-8853aa280638",
+        "timestamp": "2026-01-24T18:15:19.512378",
+        "product_id": 14,
+        "qty_change": -2.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "0d0b4cc9-b0e4-4e0b-9c50-cd8e9c5a32d9",
+        "timestamp": "2026-01-24T18:15:28.243107",
+        "product_id": 19,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "d8441185-60f9-4add-93c3-ce8085b1d8ef",
+        "timestamp": "2026-01-24T18:48:08.137988",
+        "product_id": 1,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
     }
 ]

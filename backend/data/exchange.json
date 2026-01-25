@@ -8,43 +8,35 @@
         "szuka_ilosc": 1
     },
     {
-        "id": "npc_664480c7-ef91-4d6e-9536-17849c20f154",
-        "user": "Ewa_20",
-        "daje_nazwa": "Woda",
-        "daje_ilosc": 3,
-        "szuka_nazwa": "Leki",
-        "szuka_ilosc": 4
-    },
-    {
-        "id": "npc_24161c6b-5c1a-474c-bd0b-6726dcfcaa29",
-        "user": "Marek_70",
-        "daje_nazwa": "Ryż",
+        "id": "npc_edfe7a56-1c4c-4689-99b7-dfa85103cade",
+        "user": "Monika_67",
+        "daje_nazwa": "Leki",
         "daje_ilosc": 2,
-        "szuka_nazwa": "Makaron",
-        "szuka_ilosc": 7
+        "szuka_nazwa": "Woda",
+        "szuka_ilosc": 2
     },
     {
-        "id": "npc_6ff58407-d227-43e3-8cc2-32cc0d79cbb6",
-        "user": "Zygmunt_23",
-        "daje_nazwa": "Ryż",
-        "daje_ilosc": 2,
-        "szuka_nazwa": "Leki",
-        "szuka_ilosc": 3
-    },
-    {
-        "id": "npc_fa367cd5-ceb2-49b8-a0cc-1bbd4e258663",
-        "user": "Kasia_85",
-        "daje_nazwa": "Makaron",
+        "id": "npc_1b8031b6-7816-4ef5-b89e-498e580d3988",
+        "user": "Jacek_77",
+        "daje_nazwa": "Leki",
         "daje_ilosc": 1,
-        "szuka_nazwa": "Chleb",
-        "szuka_ilosc": 9
+        "szuka_nazwa": "Makaron",
+        "szuka_ilosc": 8
     },
     {
-        "id": "npc_a2d36fb9-51c9-4089-8ef4-e6566b7231a3",
-        "user": "Ewa_11",
+        "id": "npc_488471ac-d3ce-4b2b-9cee-aebaae279475",
+        "user": "Anna_79",
+        "daje_nazwa": "Woda",
+        "daje_ilosc": 4,
+        "szuka_nazwa": "Leki",
+        "szuka_ilosc": 10
+    },
+    {
+        "id": "npc_bb46efeb-96c3-4841-9696-f778f21b3ff5",
+        "user": "Anna_47",
         "daje_nazwa": "Leki",
         "daje_ilosc": 4,
-        "szuka_nazwa": "Makaron",
-        "szuka_ilosc": 5
+        "szuka_nazwa": "Woda",
+        "szuka_ilosc": 6
     }
 ]

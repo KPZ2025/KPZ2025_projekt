@@ -3,30 +3,30 @@
         "card_id": "USER_123",
         "name": "Jan Kowalski",
         "role": "resident",
-        "balance": 122.0
+        "balance": 10.0
     },
     {
         "card_id": "ADMIN_999",
         "name": "Magazynier Szef",
         "role": "admin",
-        "balance": 9999.0
+        "balance": 0.0
     },
     {
         "card_id": "TEST_001",
         "name": "Anna Nowak",
         "role": "resident",
-        "balance": 20.0
+        "balance": 0.0
     },
     {
         "card_id": "44389335313",
         "name": "Anna Nowak",
         "role": "resident",
-        "balance": 20.0
+        "balance": 48.0
     },
     {
         "card_id": "4438933531",
         "name": "Jan Kowalski",
         "role": "admin",
-        "balance": 9999.0
+        "balance": 0.0
     }
 ]
