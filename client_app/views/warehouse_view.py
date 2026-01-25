@@ -1,7 +1,6 @@
 import customtkinter as ctk
 import tkinter.messagebox as msg
 from datetime import datetime
-# DODANO: zaktualizuj_saldo do importów
 from api_service import wyslij_transakcje, dodaj_nowy_produkt_db, pobierz_historie, zaktualizuj_saldo
 import json
 import os
