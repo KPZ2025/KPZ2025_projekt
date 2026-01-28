@@ -5,7 +5,11 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, HTTPException
-from database import Product, load_json_file, DB_FILE, TransactionInput, TRANS_FILE, save_json_file, TransactionHistoryEntry, ExchangeOffer, EXCHANGE_FILE, User, USERS_FILE
+from database import (
+    Product, load_json_file, DB_FILE, TransactionInput, TRANS_FILE, 
+    save_json_file, TransactionHistoryEntry, ExchangeOffer, EXCHANGE_FILE, 
+    User, USERS_FILE, BLOCKCHAIN_FILE, add_blockchain_block, calculate_hash
+)
 
 app = FastAPI(title="RPi Master Server")
 
@@ -29,12 +33,21 @@ def update_user_balance(card_id: str, data: BalanceUpdate):
     if user_idx is None:
         raise HTTPException(status_code=404, detail="Użytkownik nieznany")
     
+    old_balance = users[user_idx]['balance']
     users[user_idx]['balance'] -= data.amount
     
     if users[user_idx]['balance'] < 0:
         users[user_idx]['balance'] = 0
         
     save_json_file(USERS_FILE, users)
+    
+    add_blockchain_block({
+        "type": "BALANCE_CHARGE",
+        "user_card_id": card_id,
+        "amount_deducted": data.amount,
+        "old_balance": old_balance,
+        "new_balance": users[user_idx]['balance']
+    })
     
     return {"message": "Saldo zaktualizowane", "new_balance": users[user_idx]['balance']}
 
@@ -76,9 +89,17 @@ def process_transaction(trans: TransactionInput):
     transactions.append(new_history_record)
     save_json_file(TRANS_FILE, transactions)
     
+    add_blockchain_block({
+        "type": "PRODUCT_TRANSACTION",
+        "user_card_id": trans.user_card_id,
+        "product_id": trans.product_id,
+        "product_name": item_obj['name'],
+        "qty_change": trans.qty_change,
+        "new_qty": item_obj['qty']
+    })
+    
     print(f"TRANSAKCJA: User={trans.user_card_id} Produkt='{item_obj['name']}' Zmiana={trans.qty_change}")
     return {"message": "Success", "new_qty": item_obj['qty']}
-
 
 @app.get("/api/products", response_model=List[Product])
 def get_products():
@@ -115,6 +136,14 @@ def add_offer(offer: ExchangeOffer):
     offer.id = str(uuid.uuid4())
     offers.append(offer.dict())
     save_json_file(EXCHANGE_FILE, offers)
+    
+    add_blockchain_block({
+        "type": "OFFER_ADDED",
+        "offer_id": offer.id,
+        "user": offer.user,
+        "details": f"{offer.daje_ilosc} {offer.daje_nazwa} -> {offer.szuka_ilosc} {offer.szuka_nazwa}"
+    })
+    
     return {"message": "Oferta dodana", "id": offer.id}
 
 @app.delete("/api/exchange/{offer_id}")
@@ -142,7 +171,74 @@ def add_new_product(prod: Product):
     products.append(prod.dict())
     save_json_file(DB_FILE, products)
     
+    add_blockchain_block({
+        "type": "NEW_PRODUCT",
+        "product_id": new_id,
+        "name": prod.name,
+        "initial_qty": prod.qty
+    })
+    
     return {"message": "Produkt dodany", "id": new_id}
+
+
+@app.get("/api/integrity")
+def check_system_integrity():
+    chain = load_json_file(BLOCKCHAIN_FILE)
+    users = load_json_file(USERS_FILE)
+    products = load_json_file(DB_FILE)
+    
+    status = {
+        "chain_valid": True,
+        "errors": [],
+        "blockchain_length": len(chain)
+    }
+    
+    for i in range(1, len(chain)):
+        current = chain[i]
+        previous = chain[i-1]
+        
+        if current['previous_hash'] != previous['hash']:
+            status['chain_valid'] = False
+            status['errors'].append(f"Przerwany łańcuch w bloku #{current['index']}. Poprzedni hash nie pasuje.")
+        
+        recalculated_hash = calculate_hash(
+            current['index'], 
+            current['timestamp'], 
+            current['data'], 
+            current['previous_hash']
+        )
+        if recalculated_hash != current['hash']:
+            status['chain_valid'] = False
+            status['errors'].append(f"Manipulacja danymi w bloku #{current['index']}! Hash nie pasuje do zawartości.")
+
+    if not status['chain_valid']:
+        return status
+    
+    user_ids = []
+    for block in reversed(chain):
+        if block['data'].get('type') == 'BALANCE_CHARGE':
+            user_id = block['data']['user_card_id']
+            recorded_new_balance = block['data']['new_balance']
+            
+            current_user = next((u for u in users if u['card_id'] == user_id), None)
+            if current_user and user_id not in user_ids:
+                user_ids.append(user_id)
+                if abs(current_user['balance'] - recorded_new_balance) > 0.01:
+                    status['errors'].append(f"Ostrzeżenie: Saldo usera {user_id} ({current_user['balance']}) różni się od ostatniego zapisu w blockchain ({recorded_new_balance}).")
+                    break
+        
+    for product in products:
+        for block in reversed(chain):
+            if(block['data'].get('product_id')==product['id']):
+                if(block['data'].get('new_qty')!=product['qty']):
+                    print(block['data'].get('new_qty'))
+                    status['errors'].append("Wrong quantity for product "+product['name'])
+                break
+            
+    if status['errors']:
+        status['chain_valid'] = False
+        
+    return status
 
 
 class RFIDData(BaseModel):
@@ -157,7 +253,6 @@ def rfid_scan(data: RFIDData):
     print(f"Server: Odebrano ID z czytnika: {LAST_RFID}")
     return {"ok": True}
 
-# 2. Tędy pyta GUI (Aplikacja pobiera dane)
 @app.get("/api/rfid")
 def get_rfid():
     global LAST_RFID
