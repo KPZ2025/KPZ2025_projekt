@@ -6,10 +6,10 @@
         "balance": 10.0
     },
     {
-        "card_id": "ADMIN_999",
+        "card_id": "35545325435",
         "name": "Magazynier Szef",
         "role": "admin",
-        "balance": 0.0
+        "balance": 990.0
     },
     {
         "card_id": "TEST_001",
@@ -21,7 +21,7 @@
         "card_id": "44389335313",
         "name": "Anna Nowak",
         "role": "resident",
-        "balance": 48.0
+        "balance": 144.0
     },
     {
         "card_id": "4438933531",

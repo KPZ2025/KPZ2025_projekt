@@ -128,6 +128,7 @@ class SystemDystrybucjiApp(ctk.CTk):
         window.geometry("600x500")
         window.title("Raport Integralności Systemu")
         window.attributes("-topmost", True)
+        window.wait_visibility()
         window.grab_set()
 
         ctk.CTkLabel(window, text="RAPORT BLOCKCHAIN", font=("Impact", 24)).pack(pady=15)

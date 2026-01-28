@@ -204,6 +204,7 @@ class WarehouseView(ctk.CTkFrame):
         window.geometry("450x450")
         window.title("Finanse Użytkownika")
         window.attributes("-topmost", True)
+        window.wait_visibility()
         window.grab_set()
         
         ctk.CTkLabel(window, text="ZARZĄDZANIE SALDEM", font=("Impact", 20), text_color="#1F6AA5").pack(pady=20)

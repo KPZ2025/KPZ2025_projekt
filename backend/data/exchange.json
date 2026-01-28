@@ -8,35 +8,51 @@
         "szuka_ilosc": 1
     },
     {
-        "id": "npc_edfe7a56-1c4c-4689-99b7-dfa85103cade",
-        "user": "Monika_67",
-        "daje_nazwa": "Leki",
-        "daje_ilosc": 2,
-        "szuka_nazwa": "Woda",
-        "szuka_ilosc": 2
+        "id": "808d6404-29f1-4c7b-ab94-b27ab7417eba",
+        "user": "Anna Nowak",
+        "daje_nazwa": "Tabletki do wody",
+        "daje_ilosc": 1,
+        "szuka_nazwa": "Witaminy (Mix)",
+        "szuka_ilosc": 1
     },
     {
-        "id": "npc_1b8031b6-7816-4ef5-b89e-498e580d3988",
-        "user": "Jacek_77",
-        "daje_nazwa": "Leki",
+        "id": "npc_2c979f6f-d9d6-4b40-8449-7040b04ff9ad",
+        "user": "Piotr_20",
+        "daje_nazwa": "Woda",
         "daje_ilosc": 1,
         "szuka_nazwa": "Makaron",
-        "szuka_ilosc": 8
+        "szuka_ilosc": 9
     },
     {
-        "id": "npc_488471ac-d3ce-4b2b-9cee-aebaae279475",
-        "user": "Anna_79",
-        "daje_nazwa": "Woda",
+        "id": "npc_2274bfe1-38a5-43f3-8a93-17b5d299edd4",
+        "user": "Jacek_38",
+        "daje_nazwa": "Makaron",
+        "daje_ilosc": 1,
+        "szuka_nazwa": "Ryż",
+        "szuka_ilosc": 5
+    },
+    {
+        "id": "npc_c649fb3e-b88c-4f9a-a130-75ef811c5fa2",
+        "user": "Marek_16",
+        "daje_nazwa": "Leki",
         "daje_ilosc": 4,
-        "szuka_nazwa": "Leki",
+        "szuka_nazwa": "Tokeny",
+        "szuka_ilosc": 6
+    },
+    {
+        "id": "npc_c9fdac05-3a56-44ba-ad60-c22a2e890245",
+        "user": "Zygmunt_60",
+        "daje_nazwa": "Woda",
+        "daje_ilosc": 1,
+        "szuka_nazwa": "Chleb",
         "szuka_ilosc": 10
     },
     {
-        "id": "npc_bb46efeb-96c3-4841-9696-f778f21b3ff5",
-        "user": "Anna_47",
+        "id": "npc_8f40409b-ded2-447d-8fda-3d38af2a7a86",
+        "user": "Tomek_11",
         "daje_nazwa": "Leki",
         "daje_ilosc": 4,
         "szuka_nazwa": "Woda",
-        "szuka_ilosc": 6
+        "szuka_ilosc": 7
     }
 ]

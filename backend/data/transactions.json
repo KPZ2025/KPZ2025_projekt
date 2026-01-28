@@ -285,5 +285,33 @@
         "product_id": 1,
         "qty_change": -1.0,
         "user_card_id": "44389335313"
+    },
+    {
+        "id": "2d7ea09c-bed6-479c-96bb-d448e3b7a306",
+        "timestamp": "2026-01-28T15:06:10.038665",
+        "product_id": 13,
+        "qty_change": -1.0,
+        "user_card_id": "44389335313"
+    },
+    {
+        "id": "dbf946bc-778f-425a-995e-98ced92e9ecb",
+        "timestamp": "2026-01-28T15:07:24.074087",
+        "product_id": 13,
+        "qty_change": 10.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "c92f1904-38ea-47cc-97ab-69baabbe6bf9",
+        "timestamp": "2026-01-28T15:25:44.445335",
+        "product_id": 13,
+        "qty_change": 1.0,
+        "user_card_id": "4438933531"
+    },
+    {
+        "id": "7070a1e5-1ca3-42d1-a81a-4279614fc89d",
+        "timestamp": "2026-01-28T15:26:00.795766",
+        "product_id": 13,
+        "qty_change": 1.0,
+        "user_card_id": "4438933531"
     }
 ]
