@@ -163,7 +163,13 @@ class WarehouseView(ctk.CTkFrame):
             y = self.app.winfo_y() + (self.app.winfo_height()//2) - 175
         except: x, y = 100, 100
         popup.geometry(f"500x350+{x}+{y}")
-        popup.overrideredirect(True); popup.attributes("-topmost", True); popup.grab_set()
+        popup.overrideredirect(True)
+        popup.attributes("-topmost", True)
+
+        popup.update_idletasks()
+        popup.update()
+        popup.grab_set()
+
         frame = ctk.CTkFrame(popup, fg_color="#111", border_width=4, border_color="#00E676")
         frame.pack(fill="both", expand=True)
         ctk.CTkLabel(frame, text="✔", font=("Arial", 80), text_color="#00E676").pack(pady=(40, 10))
@@ -173,7 +179,13 @@ class WarehouseView(ctk.CTkFrame):
 
     def pokaz_popup_dostawy(self):
         window = ctk.CTkToplevel(self)
-        window.geometry("500x550"); window.attributes("-topmost", True); window.grab_set()
+        window.geometry("500x550")
+        window.attributes("-topmost", True)
+
+        window.update_idletasks()
+        window.update()
+        window.grab_set()
+
         
         tabs = ctk.CTkTabview(window)
         tabs.pack(fill="both", expand=True, padx=10, pady=10)
