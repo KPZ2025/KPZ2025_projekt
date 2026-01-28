@@ -53,15 +53,19 @@ class SystemDystrybucjiApp(ctk.CTk):
         threading.Thread(target=self._login_in_background, args=(user_id,), daemon=True).start()
 
     def _login_in_background(self, user_id):
-        user_data = sprawdz_uzytkownika(user_id)
-
-        self.after(0, lambda: self._finish_login(user_data))
+        try:
+            user_data = sprawdz_uzytkownika(user_id)
+            self.after(0, lambda: self._finish_login(user_data))
+        except Exception as e:
+            print(f"Błąd sieci: {e}")
+            self.after(0, lambda: self._finish_login(None))
 
     def _finish_login(self, user_data):
         self.configure(cursor="arrow")
         if not user_data:
             from tkinter import messagebox
             messagebox.showerror("Błąd", "Nieznana karta / Użytkownik nie istnieje.")
+            self.pokaz_ekran_logowania()
             return
 
         self.aktualny_uzytkownik = user_data['name']
